@@ -58,6 +58,8 @@ class PullToRefreshDemo : ComposeContainer() {
         val pullToRefreshState = rememberPullToRefreshState(isRefreshing)
         val lazyListState = rememberLazyListState()
         val scope = rememberCoroutineScope()
+        // 复现用：显示刷新态下命中的 item 序号（-1 = 未点击）
+        var lastClicked by remember { mutableStateOf(-1) }
 
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(Modifier.height(40.dp))
@@ -81,6 +83,11 @@ class PullToRefreshDemo : ComposeContainer() {
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
+                Text(
+                    "clicked item = ${if (lastClicked < 0) "-" else lastClicked.toString()}",
+                    fontSize = 18.sp,
+                    color = Color.Red
+                )
                 
                 Spacer(Modifier.height(16.dp))
                 
@@ -96,7 +103,7 @@ class PullToRefreshDemo : ComposeContainer() {
                             .clickable {
                                 scope.launch {
                                     isRefreshing = true
-                                    delay(2000) // 模拟网络请求
+                                    delay(8000) // 模拟网络请求（拉长刷新态，便于观察刷新期间的点击命中）
                                     itemCount += 5
                                     isRefreshing = false
                                 }
@@ -160,6 +167,7 @@ class PullToRefreshDemo : ComposeContainer() {
                                 .fillMaxWidth()
                                 .height(50.dp)
                                 .background(Color.LightGray)
+                                .clickable { lastClicked = index + 1 }
                                 .padding(12.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
